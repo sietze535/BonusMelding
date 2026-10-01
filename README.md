@@ -1,66 +1,110 @@
 # BonusMelding
 
-Krijg een e-mail wanneer producten die jij volgt bij Albert Heijn in de bonus staan.
+Krijg een e-mail wanneer producten die jij volgt bij **Albert Heijn** in de bonus staan.
+
+Live: [bonus-melding.vercel.app](https://bonus-melding.vercel.app)
+
+## Wat het doet
+
+1. Je vult je e-mail in en krijgt een magic link (geen wachtwoord).
+2. In het dashboard zoek je AH-producten en klik je **Volgen**.
+3. Elke maandag checkt een cronjob de nieuwe bonusfolder.
+4. Staat iets van jouw lijst in de bonus? Dan krijg je één digest-mail.
+
+De code is zo opgezet dat later andere supermarkten kunnen worden toegevoegd via een `SupermarketAdapter`.
+
+## Demo / zelf hosten
+
+Je kunt de live site gebruiken, of je eigen instantie deployen (zie hieronder). Secrets horen in Vercel/Neon/Resend — niet in deze repo.
 
 ## Stack
 
-- Next.js (App Router) op Vercel
-- Neon Postgres + Drizzle ORM
-- Resend voor e-mail
-- Vercel Cron (elke maandag 05:00 UTC)
-- Onofficiële Albert Heijn mobile API (`api.ah.nl`)
+| Onderdeel | Keuze |
+|-----------|--------|
+| Frontend / API | Next.js (App Router) |
+| Hosting | Vercel |
+| Database | Neon Postgres + Drizzle |
+| E-mail | Resend |
+| Planning | Vercel Cron (maandag 05:00 UTC) |
+| Productdata | Onofficiële AH mobile API (`api.ah.nl`) |
 
-> **Disclaimer:** er is geen officiële publieke AH API. Endpoints kunnen zonder aankondiging wijzigen. Gebruik op eigen verantwoordelijkheid en respecteer AH’s voorwaarden.
+> **Disclaimer:** Albert Heijn biedt geen officiële publieke API voor dit gebruik. De integratie leunt op de mobiele app-API en kan zonder aankondiging breken. Gebruik op eigen risico en respecteer de voorwaarden van AH. Dit project is niet gelieerd aan Albert Heijn.
 
 ## Lokaal starten
 
-```bash
-cp .env.example .env.local
-# vul DATABASE_URL, RESEND_API_KEY, CRON_SECRET, NEXT_PUBLIC_APP_URL in
+Vereisten: Node.js 20+, accounts voor Neon en Resend.
 
+```bash
+git clone https://github.com/sietze535/BonusMelding.git
+cd BonusMelding
+cp .env.example .env.local
+```
+
+Vul in `.env.local` minimaal:
+
+| Variabele | Uitleg |
+|-----------|--------|
+| `DATABASE_URL` | Neon connection string |
+| `RESEND_API_KEY` | API key van Resend |
+| `RESEND_FROM` | Afzender, bijv. `BonusMelding <noreply@jouwdomein.nl>` |
+| `CRON_SECRET` | Lange willekeurige string (beschermt cron + setup) |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` lokaal |
+
+Daarna:
+
+```bash
 npm install
 npm run db:push
 npm run dev
 ```
 
-## Scripts
+Open [http://localhost:3000](http://localhost:3000).
+
+### Handige scripts
 
 | Script | Doel |
 |--------|------|
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm run db:push` | Schema naar Neon pushen |
+| `npm run db:push` | Schema naar Postgres pushen |
 | `npm run db:studio` | Drizzle Studio |
+| `node scripts/smoke-ah.mjs` | AH API snel testen (geen DB nodig) |
 
 ## Deploy op Vercel
 
-1. Importeer [sietze535/BonusMelding](https://github.com/sietze535/BonusMelding) in Vercel (New Project → Import Git Repository).
-2. Voeg een Neon Postgres database toe (Vercel Marketplace → Neon) zodat `DATABASE_URL` gezet wordt.
-3. Maak een [Resend](https://resend.com) API key en zet:
-   - `RESEND_API_KEY`
-   - `RESEND_FROM` — gebruik een **geverifieerd eigen domein**, bijv. `BonusMelding <noreply@jouwdomein.nl>`
-   - `CRON_SECRET` (willekeurige lange string)
-   - `NEXT_PUBLIC_APP_URL` (je productie-URL, bijv. `https://bonusmelding.vercel.app`)
-4. Deploy, daarna lokaal of in CI: `DATABASE_URL=... npm run db:push`
-5. Cron draait maandag 05:00 UTC via `vercel.json`. Test handmatig:
+1. Fork of clone deze repo en importeer hem in Vercel.
+2. Koppel **Neon** (Marketplace) → `DATABASE_URL` wordt gezet.
+3. Zet de overige env vars uit de tabel hierboven (Production + idealiter Preview).
+4. Deploy.
+5. Schema aanmaken (één van beide):
+   - lokaal: `DATABASE_URL=... npm run db:push`
+   - of production: `POST /api/setup/db` met header `Authorization: Bearer $CRON_SECRET`
+6. Zet `NEXT_PUBLIC_APP_URL` op je echte URL en redeploy.
+
+Cron staat in [`vercel.json`](vercel.json) (`0 5 * * 1`). Handmatig testen:
 
 ```bash
-curl -H "Authorization: Bearer $CRON_SECRET" https://YOUR_DOMAIN/api/cron/check-bonus
+curl -H "Authorization: Bearer $CRON_SECRET" https://JOUW-URL/api/cron/check-bonus
 ```
 
 ### Mails uit spam houden
 
-`onboarding@resend.dev` belandt vaak in spam. In Resend:
+`onboarding@resend.dev` belandt vaak in spam. Verifieer een **eigen domein** in Resend (SPF + DKIM, liefst ook DMARC), zet `RESEND_FROM` daarop, en redeploy.
 
-1. **Domains → Add domain** (bijv. `jouwdomein.nl` of `mail.jouwdomein.nl`)
-2. Voeg de DNS-records toe die Resend toont (SPF, DKIM, eventueel DMARC)
-3. Wacht tot de status **Verified** is
-4. Zet in Vercel: `RESEND_FROM=BonusMelding <noreply@jouwdomein.nl>`
-5. Redeploy
+## Projectstructuur (kort)
 
-Tot die tijd: mail openen → “Geen spam” / afzender toevoegen aan contacten.
-### AH smoke-test (zonder DB)
-
-```bash
-node scripts/smoke-ah.mjs
 ```
+src/
+  app/                 # Pages + API routes
+  components/          # UI (landing, dashboard)
+  lib/
+    db/                # Drizzle schema
+    email.ts           # Resend templates
+    supermarkets/      # Adapter-interface + Albert Heijn
+```
+
+Nieuwe supermarkt: implementeer `SupermarketAdapter` in `src/lib/supermarkets/` en registreer hem in `index.ts`. De kolom `supermarket` op watches bestaat al.
+
+## Licentie
+
+MIT — zie de code als startpunt; feedback en PRs zijn welkom.
