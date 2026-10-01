@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       supermarket: data.supermarket,
       externalProductId: data.externalProductId,
       name: data.name,
-      imageUrl: data.imageUrl ?? null,
+      imageUrl: data.imageUrl ? data.imageUrl : null,
     })
     .returning();
 
