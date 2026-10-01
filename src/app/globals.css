@@ -1,0 +1,348 @@
+@import "tailwindcss";
+
+:root {
+  --bg-deep: #073528;
+  --bg-mid: #0b3d2e;
+  --bg-soft: #e8f3ec;
+  --bg-wash: #f3faf5;
+  --ink: #0b3d2e;
+  --ink-muted: #4a6358;
+  --accent: #c8f06a;
+  --accent-ink: #16351f;
+  --card: rgba(255, 255, 255, 0.78);
+  --line: rgba(11, 61, 46, 0.12);
+  --danger: #9b2c2c;
+  --ok: #146c43;
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+@theme inline {
+  --color-background: var(--bg-wash);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(200, 240, 106, 0.35), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(11, 61, 46, 0.18), transparent 55%),
+    linear-gradient(165deg, #f7fcf8 0%, #e7f2ea 45%, #d9ebe0 100%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: repeating-linear-gradient(
+    -18deg,
+    transparent 0,
+    transparent 11px,
+    rgba(11, 61, 46, 0.03) 11px,
+    rgba(11, 61, 46, 0.03) 12px
+  );
+  z-index: 0;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: min(1080px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Landing */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  align-items: end;
+  padding: 2rem 0 3.5rem;
+}
+
+.hero-inner {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 38rem;
+  animation: rise 700ms ease-out both;
+}
+
+.brand {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(3.4rem, 11vw, 6.2rem);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--bg-deep);
+  text-wrap: balance;
+}
+
+.tagline {
+  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  line-height: 1.45;
+  color: var(--ink-muted);
+  margin: 0;
+  max-width: 28rem;
+  animation: rise 700ms ease-out 120ms both;
+}
+
+.email-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  animation: rise 700ms ease-out 220ms both;
+}
+
+.email-input,
+.search-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 0.95rem 1.05rem;
+  font: inherit;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.email-input:focus,
+.search-input:focus {
+  border-color: var(--bg-mid);
+  box-shadow: 0 0 0 3px rgba(200, 240, 106, 0.45);
+}
+
+.cta,
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  border-radius: 12px;
+  padding: 0.95rem 1.2rem;
+  background: var(--bg-deep);
+  color: #f4fff0;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.cta:hover,
+.btn:hover:not(:disabled) {
+  background: #0f4f3b;
+  transform: translateY(-1px);
+}
+
+.cta:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--bg-deep);
+  border: 1px solid var(--line);
+}
+
+.linkish {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--bg-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.form-msg {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.form-msg.ok {
+  color: var(--ok);
+}
+
+.form-msg.error {
+  color: var(--danger);
+}
+
+.hero-note {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+/* Dashboard */
+.dash-top {
+  padding: 1.75rem 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.dash-top .brand-sm {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.8rem;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.dashboard {
+  display: grid;
+  gap: 1.25rem;
+  padding-bottom: 3rem;
+}
+
+@media (min-width: 900px) {
+  .dashboard {
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: start;
+  }
+}
+
+.panel {
+  background: var(--card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1.25rem 1.25rem 1.4rem;
+  animation: rise 500ms ease-out both;
+}
+
+.panel h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.55rem;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  color: var(--ink-muted);
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.search-row {
+  margin-bottom: 0.75rem;
+}
+
+.product-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 0.55rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid transparent;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.product-row:hover {
+  border-color: var(--line);
+  transform: translateY(-1px);
+}
+
+.product-media img,
+.img-fallback {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: #f0f7f2;
+}
+
+.img-fallback {
+  background: linear-gradient(135deg, #e4f0e7, #cfe3d4);
+}
+
+.product-meta {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.product-meta strong {
+  font-size: 0.98rem;
+  line-height: 1.25;
+}
+
+.badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  font-weight: 700;
+}
+
+.banner {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: rgba(200, 240, 106, 0.45);
+  color: var(--accent-ink);
+  animation: rise 500ms ease-out both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .product-row {
+    grid-template-columns: 56px 1fr;
+  }
+
+  .product-row .btn {
+    grid-column: 1 / -1;
+  }
+}
