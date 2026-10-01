@@ -10,16 +10,34 @@ function getResend() {
   return new Resend(key);
 }
 
-const from = () => process.env.RESEND_FROM ?? "BonusMelding <onboarding@resend.dev>";
+const from = () =>
+  process.env.RESEND_FROM ?? "BonusMelding <onboarding@resend.dev>";
 
 export async function sendMagicLinkEmail(email: string, manageToken: string) {
   const link = appUrl(`/api/auth/verify?token=${manageToken}`);
+  const unsubscribe = appUrl(`/api/unsubscribe?token=${manageToken}`);
   const resend = getResend();
+
+  const text = [
+    "BonusMelding",
+    "",
+    "Open je dashboard met deze link (alleen voor jou):",
+    link,
+    "",
+    "Heb je geen account aangevraagd? Negeer deze mail.",
+    `Afmelden: ${unsubscribe}`,
+  ].join("\n");
 
   await resend.emails.send({
     from: from(),
     to: email,
     subject: "Je BonusMelding dashboard-link",
+    replyTo: process.env.RESEND_REPLY_TO,
+    headers: {
+      "List-Unsubscribe": `<${unsubscribe}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+    text,
     html: `
       <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; color: #0b3d2e;">
         <h1 style="font-size: 28px; margin-bottom: 8px;">BonusMelding</h1>
@@ -33,6 +51,9 @@ export async function sendMagicLinkEmail(email: string, manageToken: string) {
           </a>
         </p>
         <p style="font-size: 13px; color: #4a6358;">Of kopieer deze link:<br/>${link}</p>
+        <p style="font-size: 12px; color: #4a6358; margin-top: 24px;">
+          <a href="${unsubscribe}" style="color:#4a6358;">Afmelden</a>
+        </p>
       </div>
     `,
   });
@@ -46,6 +67,17 @@ export async function sendBonusDigestEmail(
   const dashboard = appUrl(`/api/auth/verify?token=${manageToken}`);
   const unsubscribe = appUrl(`/api/unsubscribe?token=${manageToken}`);
   const resend = getResend();
+
+  const names = hits.map((h) => `- ${h.name}`).join("\n");
+  const text = [
+    "BonusMelding",
+    "",
+    "Deze producten die je volgt staan deze week in de Albert Heijn-bonus:",
+    names,
+    "",
+    `Beheer je lijst: ${dashboard}`,
+    `Afmelden: ${unsubscribe}`,
+  ].join("\n");
 
   const items = hits
     .map(
@@ -66,6 +98,12 @@ export async function sendBonusDigestEmail(
       hits.length === 1
         ? `${hits[0].name} staat in de bonus`
         : `${hits.length} van jouw producten staan in de bonus`,
+    replyTo: process.env.RESEND_REPLY_TO,
+    headers: {
+      "List-Unsubscribe": `<${unsubscribe}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+    text,
     html: `
       <div style="font-family: Georgia, serif; max-width: 520px; margin: 0 auto; color: #0b3d2e;">
         <h1 style="font-size: 28px; margin-bottom: 4px;">BonusMelding</h1>

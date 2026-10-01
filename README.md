@@ -38,7 +38,7 @@ npm run dev
 2. Voeg een Neon Postgres database toe (Vercel Marketplace → Neon) zodat `DATABASE_URL` gezet wordt.
 3. Maak een [Resend](https://resend.com) API key en zet:
    - `RESEND_API_KEY`
-   - `RESEND_FROM` (bijv. `BonusMelding <onboarding@resend.dev>` tot je eigen domein verified is)
+   - `RESEND_FROM` — gebruik een **geverifieerd eigen domein**, bijv. `BonusMelding <noreply@jouwdomein.nl>`
    - `CRON_SECRET` (willekeurige lange string)
    - `NEXT_PUBLIC_APP_URL` (je productie-URL, bijv. `https://bonusmelding.vercel.app`)
 4. Deploy, daarna lokaal of in CI: `DATABASE_URL=... npm run db:push`
@@ -48,6 +48,17 @@ npm run dev
 curl -H "Authorization: Bearer $CRON_SECRET" https://YOUR_DOMAIN/api/cron/check-bonus
 ```
 
+### Mails uit spam houden
+
+`onboarding@resend.dev` belandt vaak in spam. In Resend:
+
+1. **Domains → Add domain** (bijv. `jouwdomein.nl` of `mail.jouwdomein.nl`)
+2. Voeg de DNS-records toe die Resend toont (SPF, DKIM, eventueel DMARC)
+3. Wacht tot de status **Verified** is
+4. Zet in Vercel: `RESEND_FROM=BonusMelding <noreply@jouwdomein.nl>`
+5. Redeploy
+
+Tot die tijd: mail openen → “Geen spam” / afzender toevoegen aan contacten.
 ### AH smoke-test (zonder DB)
 
 ```bash
